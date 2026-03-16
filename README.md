@@ -488,6 +488,16 @@ MIT License
 
 ---
 
+---
+
+## 📄 License
+
+![1.jpg](./img/1.png)
+![2.jpg](./img/2.png)
+![3.jpg](./img/3.png)
+
+---
+
 ## 🙏 致谢
 
 - [FastAPI](https://fastapi.tiangolo.com/) - 现代化 Web 框架
@@ -502,6 +512,5 @@ MIT License
 
 **⭐ 如果这个项目对你有帮助，请给个 Star！**
 
-Made with ❤️ by Your Team
 
 </div>
