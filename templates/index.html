@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多智能体数据分析系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 0;
+            min-height: calc(100vh - 200px);
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .file-list {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-item:hover {
+            background: #e0e0e0;
+        }
+
+        .file-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 200px);
+        }
+
+        .messages {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: #fafafa;
+            max-height: calc(100vh - 300px);
+        }
+
+        .message {
+            margin-bottom: 25px;
+            animation: fadeIn 0.3s;
+            clear: both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-user {
+            text-align: right;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 15px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .message-user .message-content {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message-assistant .message-content {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+        }
+
+        .message-timestamp {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .result-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-section h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-section ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+
+        .result-section li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .result-section pre {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 400px;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .chart-container {
+            margin-top: 10px;
+        }
+
+        .chart-container img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-area {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-wrapper button {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .input-wrapper button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .input-wrapper button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .retry-badge {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .history-btn {
+            width: 100%;
+            padding: 12px;
+            background: #764ba2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .history-btn:hover {
+            background: #6a4291;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 多智能体数据分析系统</h1>
+            <p>上传数据、提出问题，让 AI 为您分析</p>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="upload-section">
+                    <h3>📚 知识库文件</h3>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="knowledgeFile" accept=".md,.txt,.pdf">
+                        <label for="knowledgeFile" class="file-input-label">上传知识库</label>
+                    </div>
+                    <div class="file-list" id="knowledgeList">
+                        <em>暂无文件</em>
+                    </div>
+                </div>
+
+                <div class="upload-section">
+                    <h3>📊 销售数据</h3>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="dataFile" accept=".csv">
+                        <label for="dataFile" class="file-input-label">上传CSV数据</label>
+                    </div>
+                    <div class="file-list" id="dataList">
+                        <em>暂无文件</em>
+                    </div>
+                </div>
+
+                <button class="history-btn" onclick="loadHistory()">📜 查看历史记录</button>
+            </div>
+
+            <div class="chat-area">
+                <div class="messages" id="messages">
+                    <div class="message message-assistant">
+                        <div class="message-content">
+                            👋 您好！我是多智能体数据分析系统。请上传数据文件并提出您的问题，我会为您进行深入分析。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <input type="text" id="questionInput" placeholder="输入您的问题..." onkeypress="handleKeyPress(event)">
+                        <button onclick="sendQuery()" id="sendBtn">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedDataFile = null;
+
+        // 加载文件列表
+        async function loadFiles() {
+            try {
+                const dataRes = await fetch('/files/data');
+                const dataJson = await dataRes.json();
+                const dataList = document.getElementById('dataList');
+
+                if (dataJson.files && dataJson.files.length > 0) {
+                    dataList.innerHTML = dataJson.files.map(f =>
+                        `<div class="file-item" onclick="selectDataFile('${f}')">${f}</div>`
+                    ).join('');
+                } else {
+                    dataList.innerHTML = '<em>暂无文件</em>';
+                }
+
+                const knowledgeRes = await fetch('/files/knowledge');
+                const knowledgeJson = await knowledgeRes.json();
+                const knowledgeList = document.getElementById('knowledgeList');
+
+                if (knowledgeJson.files && knowledgeJson.files.length > 0) {
+                    knowledgeList.innerHTML = knowledgeJson.files.map(f =>
+                        `<div class="file-item">${f}</div>`
+                    ).join('');
+                } else {
+                    knowledgeList.innerHTML = '<em>暂无文件</em>';
+                }
+            } catch (error) {
+                console.error('加载文件列表失败:', error);
+            }
+        }
+
+        function selectDataFile(filename) {
+            selectedDataFile = filename;
+            document.querySelectorAll('#dataList .file-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.textContent === filename) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+
+        // 上传知识库文件
+        document.getElementById('knowledgeFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                addMessage('assistant', `正在上传知识库文件: ${file.name}...`);
+                const response = await fetch('/upload/knowledge', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    addMessage('assistant', `✅ ${result.message}`);
+                    loadFiles();
+                } else {
+                    addMessage('assistant', `❌ 上传失败: ${result.message}`);
+                }
+            } catch (error) {
+                addMessage('assistant', `❌ 上传失败: ${error.message}`);
+            }
+            e.target.value = '';
+        });
+
+        // 上传数据文件
+        document.getElementById('dataFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                addMessage('assistant', `正在上传数据文件: ${file.name}...`);
+                const response = await fetch('/upload/data', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    addMessage('assistant', `✅ ${result.message}`);
+                    loadFiles();
+                    selectDataFile(file.name);
+                } else {
+                    addMessage('assistant', `❌ 上传失败: ${result.message}`);
+                }
+            } catch (error) {
+                addMessage('assistant', `❌ 上传失败: ${error.message}`);
+            }
+            e.target.value = '';
+        });
+
+        // 发送查询
+        async function sendQuery() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+
+            if (!question) return;
+
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading"></span>';
+
+            addMessage('user', question);
+            input.value = '';
+
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        data_file: selectedDataFile
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResult(data.result);
+                } else {
+                    addMessage('assistant', `❌ 查询失败: ${data.detail || '未知错误'}`);
+                }
+            } catch (error) {
+                addMessage('assistant', `❌ 查询失败: ${error.message}`);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送';
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendQuery();
+            }
+        }
+
+        function addMessage(type, content) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+
+            const timestamp = new Date().toLocaleTimeString('zh-CN');
+
+            messageDiv.innerHTML = `
+                <div class="message-content">${content}</div>
+                <div class="message-timestamp">${timestamp}</div>
+            `;
+
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function displayResult(result) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message message-assistant';
+
+            const timestamp = new Date().toLocaleTimeString('zh-CN');
+            const retryBadge = result.retry_count > 0 ?
+                `<span class="status-badge retry-badge">重试 ${result.retry_count} 次</span>` : '';
+            const qualityBadge = result.quality?.approved ?
+                '<span class="status-badge status-success">质量通过</span>' :
+                '<span class="status-badge status-error">质量未通过</span>';
+
+            let content = `
+                <div class="message-content">
+                    <strong>分析完成</strong> ${qualityBadge} ${retryBadge}
+
+                    <div class="result-section">
+                        <h4>📋 报告</h4>
+                        <pre>${result.report || '无报告内容'}</pre>
+                    </div>
+            `;
+
+            if (result.analysis && result.analysis.summary) {
+                content += `
+                    <div class="result-section">
+                        <h4>📊 分析摘要</h4>
+                        <pre>${result.analysis.summary}</pre>
+                    </div>
+                `;
+            }
+
+            if (result.analysis && result.analysis.insights && result.analysis.insights.length > 0) {
+                content += `
+                    <div class="result-section">
+                        <h4>💡 关键洞察</h4>
+                        <ul>
+                `;
+                result.analysis.insights.forEach(insight => {
+                    content += `<li>${insight}</li>`;
+                });
+                content += `
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (result.quality) {
+                const quality = result.quality;
+                let qualityText = '';
+
+                if (quality.credibility_score !== undefined) {
+                    qualityText += `可信度评分: ${quality.credibility_score}\n`;
+                }
+
+                if (quality.issues && quality.issues.length > 0) {
+                    qualityText += '\n发现的问题:\n';
+                    quality.issues.forEach(issue => {
+                        qualityText += `- [${issue.severity}] ${issue.description}\n`;
+                    });
+                }
+
+                if (quality.corrections && quality.corrections.length > 0) {
+                    qualityText += '\n改进建议:\n';
+                    quality.corrections.forEach(correction => {
+                        qualityText += `- ${correction}\n`;
+                    });
+                }
+
+                if (qualityText) {
+                    content += `
+                        <div class="result-section">
+                            <h4>✅ 质量评估</h4>
+                            <pre>${qualityText}</pre>
+                        </div>
+                    `;
+                }
+            }
+
+            if (result.chart_paths && result.chart_paths.length > 0) {
+                content += `
+                    <div class="result-section">
+                        <h4>📈 图表</h4>
+                        <div class="chart-container">
+                `;
+                result.chart_paths.forEach(path => {
+                    const filename = path.split('/').pop().split('\\').pop();
+                    content += `<img src="/charts/${filename}" alt="图表">`;
+                });
+                content += `
+                        </div>
+                    </div>
+                `;
+            }
+
+            content += `
+                </div>
+                <div class="message-timestamp">${timestamp}</div>
+            `;
+
+            messageDiv.innerHTML = content;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/history');
+                const data = await response.json();
+
+                if (data.success && data.history.length > 0) {
+                    const messagesDiv = document.getElementById('messages');
+                    messagesDiv.innerHTML = '';
+
+                    data.history.forEach(item => {
+                        addMessage('user', item.question);
+                        displayResult(item.result);
+                    });
+                } else {
+                    addMessage('assistant', '暂无历史记录');
+                }
+            } catch (error) {
+                addMessage('assistant', `❌ 加载历史记录失败: ${error.message}`);
+            }
+        }
+
+        // 页面加载时初始化
+        window.onload = () => {
+            loadFiles();
+        };
+    </script>
+</body>
+</html>
